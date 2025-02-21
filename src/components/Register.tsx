@@ -1,23 +1,15 @@
+// src/components/Register.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-interface RegistrationResponse {
-    user: {
-        id: number;
-        email: string;
-        totpSecret?: string;
-        createdAt: string;
-    };
-    qrCodeDataURL: string;
-}
+import { RegistrationResponse } from '../App';
 
 interface RegisterProps {
-    setUserId: React.Dispatch<React.SetStateAction<number | null>>;
+    setRegistrationData: React.Dispatch<React.SetStateAction<RegistrationResponse | null>>;
 }
 
-const Register: React.FC<RegisterProps> = ({ setUserId }) => {
+const Register: React.FC<RegisterProps> = ({ setRegistrationData }) => {
     const [email, setEmail] = useState<string>('');
-    const [registrationData, setRegistrationData] = useState<RegistrationResponse | null>(null);
+    const [registrationData, setLocalRegistrationData] = useState<RegistrationResponse | null>(null);
     const navigate = useNavigate();
 
     const handleRegister = async (): Promise<void> => {
@@ -31,8 +23,8 @@ const Register: React.FC<RegisterProps> = ({ setUserId }) => {
                 throw new Error('Registration failed');
             }
             const data: RegistrationResponse = await response.json();
-            setUserId(data.user.id);
-            setRegistrationData(data);
+            setLocalRegistrationData(data);
+            setRegistrationData(data); // update parent state with full registration info
         } catch (error) {
             console.error('Registration error:', error);
         }
@@ -40,21 +32,19 @@ const Register: React.FC<RegisterProps> = ({ setUserId }) => {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-700">Register</h2>
-            </div>
+            <h2 className="text-2xl text-gray-700 font-bold mb-4">Register</h2>
 
             {/* Registration Form */}
-            <div className="bg-white shadow rounded-lg p-6 max-w-md">
+            <div className="bg-gray-700 shadow rounded-lg p-6 max-w-md text-white">
                 <div className="mb-4">
-                    <label htmlFor="email" className="block text-gray-700 mb-2">
+                    <label htmlFor="email" className="block mb-2 text-gray-200">
                         Email Address
                     </label>
                     <input
                         id="email"
                         type="email"
                         placeholder="Enter your email"
-                        className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                     />
@@ -69,11 +59,15 @@ const Register: React.FC<RegisterProps> = ({ setUserId }) => {
 
             {/* Registration Result */}
             {registrationData && (
-                <div className="bg-white shadow rounded-lg p-6 max-w-md">
-                    <h3 className="text-xl font-semibold text-gray-700 mb-4">Registration Details</h3>
-                    <div className="mb-4 text-gray-700 space-y-1">
-                        <p><span className="font-medium">User ID:</span> {registrationData.user.id}</p>
-                        <p><span className="font-medium">Email:</span> {registrationData.user.email}</p>
+                <div className="bg-gray-700 shadow rounded-lg p-6 max-w-md text-white">
+                    <h3 className="text-xl font-semibold mb-4">Registration Details</h3>
+                    <div className="mb-4 space-y-1">
+                        <p>
+                            <span className="font-medium">User ID:</span> {registrationData.user.id}
+                        </p>
+                        <p>
+                            <span className="font-medium">Email:</span> {registrationData.user.email}
+                        </p>
                         {registrationData.user.totpSecret && (
                             <p>
                                 <span className="font-medium">TOTP Secret:</span> {registrationData.user.totpSecret}
@@ -85,9 +79,7 @@ const Register: React.FC<RegisterProps> = ({ setUserId }) => {
                         </p>
                     </div>
                     <div className="mb-4">
-                        <p className="font-medium text-gray-700 mb-2">
-                            Scan this QR Code with your Authenticator App:
-                        </p>
+                        <p className="font-medium mb-2">Scan this QR Code with your Authenticator App:</p>
                         <img src={registrationData.qrCodeDataURL} alt="QR Code" className="mx-auto" />
                     </div>
                     <button

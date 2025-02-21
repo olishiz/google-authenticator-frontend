@@ -7,9 +7,9 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
     return (
-        <div className="flex min-h-screen bg-slate-50 text-gray-800">
+        <div className="flex min-h-screen bg-slate-50 text-white">
             {/* Sidebar */}
-            <aside className="w-64 bg-white border-r border-gray-200 p-6">
+            <aside className="w-64 bg-[#2d3747] border-r border-gray-200 p-6">
                 <div className="text-2xl font-bold mb-8">Dashboard</div>
                 <nav className="space-y-4">
                     <Link

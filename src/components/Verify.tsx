@@ -1,12 +1,14 @@
+// src/components/Verify.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SnackBar from './SnackBar';
+import { RegistrationResponse } from '../App';
 
 interface VerifyProps {
-    userId: number | null;
+    registrationData: RegistrationResponse | null;
 }
 
-const Verify: React.FC<VerifyProps> = ({ userId }) => {
+const Verify: React.FC<VerifyProps> = ({ registrationData }) => {
     const [token, setToken] = useState<string>('');
     const [snackBar, setSnackBar] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     const navigate = useNavigate();
@@ -16,7 +18,8 @@ const Verify: React.FC<VerifyProps> = ({ userId }) => {
             const response = await fetch('http://localhost:3000/auth/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, token }),
+                // Pass the user ID from the registration data
+                body: JSON.stringify({ userId: registrationData?.user.id, token }),
             });
             const data = await response.json();
             if (data.valid) {
@@ -30,12 +33,12 @@ const Verify: React.FC<VerifyProps> = ({ userId }) => {
         }
     };
 
-    if (!userId) {
+    if (!registrationData) {
         return (
-            <div>
-                <h2 className="text-2xl font-bold text-gray-700 mb-4">Verify</h2>
-                <div className="bg-white shadow rounded-lg p-6 max-w-md">
-                    <p className="text-gray-800">No user ID found. Please register first.</p>
+            <div className="space-y-6">
+                <h2 className="text-2xl font-bold mb-4">Verify</h2>
+                <div className="bg-gray-700 shadow rounded-lg p-6 max-w-md text-white">
+                    <p>No registration data found. Please register first.</p>
                     <button
                         onClick={() => navigate('/')}
                         className="mt-4 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors"
@@ -57,17 +60,38 @@ const Verify: React.FC<VerifyProps> = ({ userId }) => {
                 />
             )}
 
-            <h2 className="text-2xl font-bold text-gray-700">Verify Code</h2>
-            <div className="bg-white shadow rounded-lg p-6 max-w-md">
+            <h2 className="text-2xl font-bold mb-4">Verify Code</h2>
+            {/* Display user details and QR code */}
+            <div className="bg-gray-700 shadow rounded-lg p-6 max-w-md text-white">
                 <div className="mb-4">
-                    <label htmlFor="token" className="block text-gray-700 mb-2">
+                    <h3 className="text-xl font-semibold">User Details</h3>
+                    <p>
+                        <span className="font-medium">User ID:</span> {registrationData.user.id}
+                    </p>
+                    <p>
+                        <span className="font-medium">Email:</span> {registrationData.user.email}
+                    </p>
+                    <p>
+                        <span className="font-medium">Registered At:</span>{' '}
+                        {new Date(registrationData.user.createdAt).toLocaleString()}
+                    </p>
+                </div>
+                {/* Optionally show the QR code again */}
+                <div className="mb-4">
+                    <p className="font-medium">QR Code:</p>
+                    <img src={registrationData.qrCodeDataURL} alt="QR Code" className="mx-auto" />
+                </div>
+
+                {/* Verification Input */}
+                <div className="mb-4">
+                    <label htmlFor="token" className="block mb-2">
                         Enter 6-digit Code
                     </label>
                     <input
                         id="token"
                         type="text"
                         placeholder="e.g., 123456"
-                        className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
+                        className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
                         value={token}
                         onChange={(e) => setToken(e.target.value)}
                     />
